@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/navigation_config"
-        android:name="com.kidticzou.homeapp.ui.notifications.ConfigFragment"
+        android:name="com.kidticzou.homeapp.ui.config.ConfigFragment"
         android:label="Config"
         tools:layout="@layout/fragment_config" />
 </navigation>

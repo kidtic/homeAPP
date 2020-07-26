@@ -3,6 +3,7 @@ package com.kidticzou.homeapp.ui.money;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Looper;
 import android.view.KeyEvent;
@@ -11,6 +12,8 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.kidticzou.homeapp.R;
@@ -23,6 +26,10 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
     private EditText mEidtPs;
     private Button mBtnDiv;
     private Button mBtnConmmit;
+    private RadioGroup mChangRadio;
+    private RadioButton mRbtn_f;//扣款
+    private RadioButton mRbtn_p;//还款
+    private boolean mChangRadioF_bool;//是选的哪一个，实时更新。
     private NetMsg mNet;
 
     @Override
@@ -33,25 +40,60 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
         mEidtPs=findViewById(R.id.et_ps);
         mBtnDiv=findViewById(R.id.btn_div2);
         mBtnConmmit=findViewById(R.id.btn_moneycommit);
+        mChangRadio=findViewById(R.id.rg_1);
+        mRbtn_f=findViewById(R.id.rb_f);
+        mRbtn_p=findViewById(R.id.rb_p);
         myapp appdata= (myapp) getApplication();
         mNet=new NetMsg(ChangeMoneyActivity.this,appdata.url,2333,appdata.user,appdata.passwd);
+        //查看默认扣款还是还款
+        if(appdata.mChangMoneyF){
+            mRbtn_f.setChecked(true);
+            mEditChangeMoney.setTextColor(Color.rgb(0,255,0));
+            mChangRadioF_bool=true;
+        }
+        else {
+            mRbtn_p.setChecked(true);
+            mEditChangeMoney.setTextColor(Color.rgb(255,0,0));
+            mChangRadioF_bool=false;
+        }
 
 
+        //提交按键监听
         mBtnConmmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 float changemoney=Float.parseFloat(mEditChangeMoney.getText().toString());
+                if(mChangRadioF_bool){
+                    changemoney=(-1)*changemoney;
+                }
                 String ps=mEidtPs.getText().toString();
                 mNet.changeMoney(changemoney,ps,false);
             }
         });
+
+        //除以2
         mBtnDiv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int changemoney=Integer.parseInt(mEditChangeMoney.getText().toString());
+                float changemoney=Float.parseFloat(mEditChangeMoney.getText().toString());
                 changemoney=changemoney/2;
                 mEditChangeMoney.setText(String.valueOf(changemoney));
 
+            }
+        });
+        //扣还是加，监听事件
+        mChangRadio.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                if(i==R.id.rb_f){
+                    mEditChangeMoney.setTextColor(Color.rgb(0,255,0));
+                    mChangRadioF_bool=true;
+
+                }
+                else if (i==R.id.rb_p){
+                    mEditChangeMoney.setTextColor(Color.rgb(255,0,0));
+                    mChangRadioF_bool=false;
+                }
             }
         });
     }

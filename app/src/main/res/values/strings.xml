@@ -3,4 +3,5 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="url_update">http://kidticzou.com:5000/sharing/fnfPcP4rp</string>
 </resources>
