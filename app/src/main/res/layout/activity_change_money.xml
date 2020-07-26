@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+
+    <EditText
+        android:id="@+id/et_changmoney"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="numberSigned"
+        android:layout_marginTop="150dp"
+        android:textSize="40sp"
+        android:hint="输入改变金额"
+         />
+    <EditText
+        android:id="@+id/et_ps"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:hint="备注"/>
+    <Button
+        android:id="@+id/btn_div2"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="除以2"
+        android:textSize="20dp"/>
+    <Button
+        android:id="@+id/btn_moneycommit"
+        android:layout_width="200dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="150dp"
+        android:textSize="30dp"
+        android:text="提交"/>
+</LinearLayout>

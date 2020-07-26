@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="170dp"
+            android:background="@color/colorPrimary"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            />
+        <TextView
+            android:id="@+id/tv_money"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="60sp"
+            android:text="0.0"
+            android:layout_gravity="bottom"
+            android:gravity="center_vertical"
+            android:textColor="#ffffff"
+            android:paddingLeft="10dp"
+            />
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="30sp"
+            android:text="余额"
+            android:textColor="#ffffff"
+            android:layout_gravity="top"
+            android:gravity="center_vertical"
+            android:paddingLeft="10dp"
+            android:paddingTop="10dp"
+            />
+
+    </FrameLayout>
+
+    <ListView
+        android:id="@+id/lv_money"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="kaka"
+        android:layout_marginTop="300dp"/>
+
+
+
+
+</LinearLayout>
+
+</ScrollView>
