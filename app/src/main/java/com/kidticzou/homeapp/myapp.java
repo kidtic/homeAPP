@@ -3,12 +3,14 @@ package com.kidticzou.homeapp;
 import android.app.Application;
 
 import com.kidticzou.homeapp.model.Bill;
+import com.kidticzou.homeapp.model.SaveBill;
 
 public class myapp extends Application {
     public String url;
     public String user;
     public String passwd;
     public Bill[] appBillData;
+    public SaveBill[] appSaveBillData;
 
     //--------config
 

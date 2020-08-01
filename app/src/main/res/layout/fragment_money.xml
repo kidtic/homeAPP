@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -50,6 +51,42 @@
         android:layout_height="200dp"
 
         />
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="50dp"
+        app:cardBackgroundColor="#11EEEE"
+        android:layout_marginRight="20dp"
+        android:layout_marginLeft="20dp"
+        app:cardCornerRadius="10dp"
+        >
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="万元计划"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:textSize="20sp"
+            />
+        <TextView
+            android:id="@+id/tv_savemoney"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0.0"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:textSize="50dp"/>
+        <TextView
+            android:id="@+id/tv_savetarget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:gravity="end"
+            android:text="应存：0.0"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="5dp"/>
+
+    </androidx.cardview.widget.CardView>
 
     <Button
         android:layout_width="match_parent"

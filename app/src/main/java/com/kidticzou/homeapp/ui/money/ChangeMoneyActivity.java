@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.kidticzou.homeapp.R;
 import com.kidticzou.homeapp.model.Bill;
 import com.kidticzou.homeapp.model.NetMsg;
+import com.kidticzou.homeapp.model.SaveBill;
 import com.kidticzou.homeapp.myapp;
 
 public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.ServerReturn {
@@ -112,6 +113,11 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
 
     @Override
     public void returnBill(Bill[] data) {
+
+    }
+
+    @Override
+    public void returnSaveBill(SaveBill[] data) {
 
     }
 

@@ -26,6 +26,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -214,6 +215,7 @@ public class NetMsg {
         //报错
         void errorLog(String errString);
         void returnBill(Bill[] data);
+        void returnSaveBill(SaveBill[] data);
         //
         void home();
     }
@@ -277,7 +279,7 @@ public class NetMsg {
     /**
      * 返回账单明细
      */
-    public void returnBill(){
+    public void returnBill() throws InterruptedException {
         //-----转换json命令
         JSONObject pt=new JSONObject();
         pt.put("head","request");
@@ -291,7 +293,7 @@ public class NetMsg {
         final String encryptdata=encrypt(passwd,"0000000000000000",outjson);
 
         //--发送（考虑需要多线程）
-        new Thread(new Runnable() {
+        Thread t= new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -338,7 +340,9 @@ public class NetMsg {
 
                 }
             }
-        }).start();
+        });
+        t.start();
+        t.join();
 
     }
 
@@ -398,6 +402,81 @@ public class NetMsg {
                 }
             }
         }).start();
+
+    }
+
+    /**
+     * 返回万元计划存储单
+     */
+    public void returnSaveBill() throws InterruptedException {
+        //-----转换json命令
+        JSONObject pt=new JSONObject();
+        pt.put("head","request");
+        pt.put("part","save");
+        pt.put("func","return");
+        pt.put("user",user);
+        pt.put("time",new Date().toString());
+        String outjson=pt.toJSONString();
+
+        //--加密
+        final String encryptdata=encrypt(passwd,"0000000000000000",outjson);
+
+        //--发送（考虑需要多线程）
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Connect();
+                    out.writeUTF(encryptdata);
+
+                    String str = in.readLine();
+                    String resstr=decrypt(passwd,"0000000000000000",str);
+                    System.out.println(resstr);
+                    if(resstr==null){
+                        mServRet.errorLog("密码错误");
+                    }
+                    //解析返回
+                    JSONObject res=JSON.parseObject(resstr);
+
+                    if(res.getString("func").equals("return")&&res.getString("part").equals("save")){
+                        JSONArray billdatajson=res.getJSONArray("data");
+                        int len=billdatajson.size();
+                        SaveBill[] billdata=new SaveBill[len];
+                        for(int i=0;i<len;i++){
+                            JSONObject cashe= (JSONObject) billdatajson.get(i);
+                            //解析日期
+                            SimpleDateFormat ft=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            Date time=ft.parse(cashe.getString("time"));
+                            //解析savemoney
+                            float money=Float.parseFloat(cashe.getString("money"));
+                            //解析改变savemoney
+                            float moneychange=Float.parseFloat(cashe.getString("moneychange"));
+                            //解析target
+                            float target=Float.parseFloat(cashe.getString("target"));
+                            //解析改变target
+                            float targetchange=Float.parseFloat(cashe.getString("targetchange"));
+                            //解析ps
+                            String ps=cashe.getString("ps");
+                            //解析star
+                            boolean star=cashe.getString("star").equals("true");
+                            //准备账单
+                            billdata[i] = new SaveBill(time,target,money,targetchange,moneychange,ps,star);
+
+                        }
+                        mServRet.returnSaveBill(billdata);
+                    }
+
+                    closeConnect();
+                } catch (IOException | ParseException e) {
+                    e.printStackTrace();
+                    mServRet.errorLog("无法连接服务器，或密码错误");
+
+                }
+            }
+        });
+        t.start();
+        t.join();
+
 
     }
 

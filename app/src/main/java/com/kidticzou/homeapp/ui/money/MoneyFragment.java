@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Looper;
-import android.renderscript.ScriptIntrinsicYuvToRGB;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,17 +15,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 
-import com.kidticzou.homeapp.MainActivity;
 import com.kidticzou.homeapp.R;
 import com.kidticzou.homeapp.model.Bill;
 import com.kidticzou.homeapp.model.NetMsg;
+import com.kidticzou.homeapp.model.SaveBill;
 import com.kidticzou.homeapp.myapp;
-import com.kidticzou.homeapp.ui.login.LoginActivity;
-
-import java.util.Date;
 
 public class MoneyFragment extends Fragment implements NetMsg.ServerReturn {
     private TextView mMoneyShow;
@@ -34,6 +28,9 @@ public class MoneyFragment extends Fragment implements NetMsg.ServerReturn {
     private NetMsg mNet;
     private SharedPreferences mspf;
     private Bill[] data;
+    private SaveBill[] savedata;
+    private TextView mTv_savemoneyShow;
+    private TextView mTv_savetargetShow;
     private String[] menu={"改变余额","账单"};
 
 
@@ -42,6 +39,8 @@ public class MoneyFragment extends Fragment implements NetMsg.ServerReturn {
         mMoneyShow=root.findViewById(R.id.tv_money);
         mMenu=root.findViewById(R.id.lv_money);
         mMenu.setAdapter(new moneyMenuAdapter(root.getContext(),menu));
+        mTv_savemoneyShow=root.findViewById(R.id.tv_savemoney);
+        mTv_savetargetShow=root.findViewById(R.id.tv_savetarget);
         final myapp appdata= (myapp) getActivity().getApplication();
 
         mMenu.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -72,14 +71,51 @@ public class MoneyFragment extends Fragment implements NetMsg.ServerReturn {
         //mspf=getSharedPreferences("config",MODE_PRIVATE);
 
         mNet=new NetMsg(MoneyFragment.this,appdata.url,2333,appdata.user,appdata.passwd);
-        mNet.returnBill();
+        //查询账单与储蓄单
+        try {
+            mNet.returnBill();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            mNet.returnSaveBill();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        updataShow();
+
 
         return root;
     }
 
+
+    private void updataShow(){
+        myapp appdata=(myapp)getActivity().getApplication();
+        float mony = appdata.appBillData[appdata.appBillData.length-1].money;
+        mMoneyShow.setText(String.valueOf(mony));
+
+        SaveBill[] data=appdata.appSaveBillData;
+        //显示储蓄额
+        String moneystr;
+        moneystr=String.valueOf(data[data.length-1].money);
+        mTv_savemoneyShow.setText(moneystr);
+        //显示应存量
+        String targetstr;
+        targetstr=String.valueOf(data[data.length-1].target);
+        targetstr="应存:"+targetstr;
+        mTv_savetargetShow.setText(targetstr);
+
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        mNet.returnBill();
+        try {
+            mNet.returnBill();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        updataShow();
         super.onActivityResult(requestCode, resultCode, data);
 
     }
@@ -100,7 +136,13 @@ public class MoneyFragment extends Fragment implements NetMsg.ServerReturn {
     public void returnBill(Bill[] data) {
         myapp appdata= (myapp) getActivity().getApplication();
         appdata.appBillData=data;
-        mMoneyShow.setText(String.valueOf(data[data.length-1].money));
+
+    }
+
+    @Override
+    public void returnSaveBill(SaveBill[] data) {
+        myapp appdata=(myapp)getActivity().getApplication();
+        appdata.appSaveBillData=data;
 
     }
 

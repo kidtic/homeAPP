@@ -15,6 +15,7 @@ import com.kidticzou.homeapp.MainActivity;
 import com.kidticzou.homeapp.R;
 import com.kidticzou.homeapp.model.Bill;
 import com.kidticzou.homeapp.model.NetMsg;
+import com.kidticzou.homeapp.model.SaveBill;
 import com.kidticzou.homeapp.myapp;
 import com.kidticzou.homeapp.ui.money.MoneyFragment;
 
@@ -88,6 +89,11 @@ public class LoginActivity extends AppCompatActivity implements NetMsg.ServerRet
 
     @Override
     public void returnBill(Bill[] data) {
+
+    }
+
+    @Override
+    public void returnSaveBill(SaveBill[] data) {
 
     }
 
