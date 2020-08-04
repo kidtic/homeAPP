@@ -210,13 +210,9 @@ public class NetMsg {
      * 回响接口
      */
     public interface ServerReturn{
-        //成功登录到主界面
-        void loginhome();
         //报错
         void errorLog(String errString);
-        void returnBill(Bill[] data);
-        void returnSaveBill(SaveBill[] data);
-        //
+        //返回home
         void home();
     }
 
@@ -224,7 +220,8 @@ public class NetMsg {
      * 用于登录确认，对服务器
      * 发送确认消息等待服务器回应
      */
-    public void loginServer(){
+    public String loginServer(){
+        String returnmsg="error";
         //-----转换json命令
         JSONObject pt=new JSONObject();
         pt.put("head","request");
@@ -238,48 +235,48 @@ public class NetMsg {
         //--加密
         final String encryptdata=encrypt(passwd,"0000000000000000",outjson);
 
-        //--发送（考虑需要多线程）
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Connect();
-                    out.writeUTF(encryptdata);
+        //--发送
 
-                    String str = in.readLine();
-                    String resstr=decrypt(passwd,"0000000000000000",str);
-                    System.out.println(resstr);
-                    if(resstr==null){
-                        mServRet.errorLog("密码错误");
+        try {
+            Connect();
+            out.writeUTF(encryptdata);
+
+            String str = in.readLine();
+            String resstr=decrypt(passwd,"0000000000000000",str);
+            System.out.println(resstr);
+            if(resstr==null){
+                returnmsg="密码错误";
+            }
+            else{
+                //解析返回
+                JSONObject res=JSON.parseObject(resstr);
+                if(res.getString("func").equals("login")){
+                    if(res.getString("data").equals("ok")){
+                        System.out.println("loginhome");
+                        returnmsg="ok";
                     }
-                    //解析返回
-                    JSONObject res=JSON.parseObject(resstr);
-                    if(res.getString("func").equals("login")){
-                        if(res.getString("data").equals("ok")){
-                            System.out.println("loginhome");
-                            mServRet.loginhome();
-                        }
-                        else if(res.getString("data").equals("no user")){
-                            System.out.println("用户名不存在");
-                            mServRet.errorLog("用户名不存在");
-                        }
+                    else if(res.getString("data").equals("no user")){
+                        System.out.println("用户名不存在");
+                        returnmsg="用户名不存在";
                     }
-
-                    closeConnect();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    mServRet.errorLog("无法连接服务器，或密码错误");
-
                 }
             }
-        }).start();
+
+            closeConnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+            returnmsg="无法连接服务器，或密码错误";
+        }
+
+        return returnmsg;
 
     }
 
     /**
-     * 返回账单明细
+     * 返回余额账单明细
      */
-    public void returnBill() throws InterruptedException {
+    public Bill[] PayReturn(){
+        Bill[] resBill= new Bill[0];
         //-----转换json命令
         JSONObject pt=new JSONObject();
         pt.put("head","request");
@@ -293,63 +290,62 @@ public class NetMsg {
         final String encryptdata=encrypt(passwd,"0000000000000000",outjson);
 
         //--发送（考虑需要多线程）
-        Thread t= new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Connect();
-                    out.writeUTF(encryptdata);
+        try {
+            Connect();
+            out.writeUTF(encryptdata);
 
-                    String str = in.readLine();
-                    String resstr=decrypt(passwd,"0000000000000000",str);
-                    System.out.println(resstr);
-                    if(resstr==null){
-                        mServRet.errorLog("密码错误");
-                    }
-                    //解析返回
-                    JSONObject res=JSON.parseObject(resstr);
+            String str = in.readLine();
+            String resstr=decrypt(passwd,"0000000000000000",str);
+            System.out.println(resstr);
+            if(resstr==null){
+                mServRet.errorLog("密码错误");
+            }
+            //解析返回
+            JSONObject res=JSON.parseObject(resstr);
 
-                    if(res.getString("func").equals("return")&&res.getString("part").equals("pay")){
-                        JSONArray billdatajson=res.getJSONArray("data");
-                        int len=billdatajson.size();
-                        Bill[] billdata=new Bill[len];
-                        for(int i=0;i<len;i++){
-                            JSONObject cashe= (JSONObject) billdatajson.get(i);
-                            //解析日期
-                            SimpleDateFormat ft=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                            Date time=ft.parse(cashe.getString("time"));
-                            //解析余额money
-                            float money=Float.parseFloat(cashe.getString("money"));
-                            //解析改变余额
-                            float moneychange=Float.parseFloat(cashe.getString("moneychange"));
-                            //解析ps
-                            String ps=cashe.getString("ps");
-                            //解析star
-                            boolean star=cashe.getString("star").equals("true");
-                            //准备账单
-                            billdata[i] = new Bill(time,moneychange,money,ps,star);
-
-                        }
-                        mServRet.returnBill(billdata);
-                    }
-
-                    closeConnect();
-                } catch (IOException | ParseException e) {
-                    e.printStackTrace();
-                    mServRet.errorLog("无法连接服务器，或密码错误");
+            if(res.getString("func").equals("return")&&res.getString("part").equals("pay")){
+                JSONArray billdatajson=res.getJSONArray("data");
+                int len=billdatajson.size();
+                Bill[] billdata=new Bill[len];
+                for(int i=0;i<len;i++){
+                    JSONObject cashe= (JSONObject) billdatajson.get(i);
+                    //解析日期
+                    SimpleDateFormat ft=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    Date time=ft.parse(cashe.getString("time"));
+                    //解析余额money
+                    float money=Float.parseFloat(cashe.getString("money"));
+                    //解析改变余额
+                    float moneychange=Float.parseFloat(cashe.getString("moneychange"));
+                    //解析ps
+                    String ps=cashe.getString("ps");
+                    //解析star
+                    boolean star=cashe.getString("star").equals("true");
+                    //准备账单
+                    billdata[i] = new Bill(time,moneychange,money,ps,star);
 
                 }
+                resBill=billdata;
             }
-        });
-        t.start();
-        t.join();
 
+            closeConnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mServRet.errorLog("无法连接服务器，或密码错误");
+
+        }
+        catch (ParseException e){
+            e.printStackTrace();
+            mServRet.errorLog("ParseException");
+        }
+
+        return resBill;
     }
 
     /**
      * 改变余额
      */
-    public void changeMoney(float changmoney,String ps,boolean star){
+    public boolean PayChange(float changmoney,String ps,boolean star){
+        boolean resbool=false;
         //-----转换json命令
         JSONObject pt=new JSONObject();
         pt.put("head","request");
@@ -368,47 +364,116 @@ public class NetMsg {
         final String encryptdata=encrypt(passwd,"0000000000000000",outjson);
 
         //--发送（考虑需要多线程）
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Connect();
-                    out.writeUTF(encryptdata);
+        try {
+            Connect();
+            out.writeUTF(encryptdata);
 
-                    String str = in.readLine();
-                    String resstr=decrypt(passwd,"0000000000000000",str);
-                    System.out.println(resstr);
-                    if(resstr==null){
-                        mServRet.errorLog("密码错误");
-                    }
-                    //解析返回
-                    JSONObject res=JSON.parseObject(resstr);
-                    if(res.getString("func").equals("change")&&res.getString("part").equals("pay")){
-                        JSONObject datajson=res.getJSONObject("data");
-                        String result=datajson.getString("result");
-                        if(result=="error"){
-                            mServRet.errorLog("改动失败");
-                        }
-                        else {
-                            mServRet.home();
-                        }
-                    }
+            String str = in.readLine();
+            String resstr=decrypt(passwd,"0000000000000000",str);
+            System.out.println(resstr);
+            if(resstr==null){
+                mServRet.errorLog("密码错误");
+            }
+            //解析返回
+            JSONObject res=JSON.parseObject(resstr);
+            if(res.getString("func").equals("change")&&res.getString("part").equals("pay")){
+                if(res.getString("result").equals("ok")){
+                    mServRet.home();
+                    resbool=true;
+                }
+                else {
+                    mServRet.errorLog("改动失败");
+                }
 
-                    closeConnect();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    mServRet.errorLog("无法连接服务器，或密码错误");
+            }
+
+            closeConnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mServRet.errorLog("无法连接服务器，或密码错误");
+
+        }
+
+        return resbool;
+    }
+
+    /**
+     * 返回余额账单中最后一条
+     */
+    public Bill PayReturnLast(){
+        Bill resBill=null;
+        //-----转换json命令
+        JSONObject pt=new JSONObject();
+        pt.put("head","request");
+        pt.put("part","pay");
+        pt.put("func","returnlast");
+        pt.put("user",user);
+        pt.put("time",new Date().toString());
+        String outjson=pt.toJSONString();
+
+        //--加密
+        final String encryptdata=encrypt(passwd,"0000000000000000",outjson);
+
+        //--发送（考虑需要多线程）
+        try {
+            Connect();
+            out.writeUTF(encryptdata);
+
+            String str = in.readLine();
+            String resstr=decrypt(passwd,"0000000000000000",str);
+            System.out.println(resstr);
+            if(resstr==null){
+                mServRet.errorLog("密码错误");
+            }
+            //解析返回
+            JSONObject res=JSON.parseObject(resstr);
+
+            if(res.getString("func").equals("returnlast")&&res.getString("part").equals("pay")){
+                if(res.getString("result").equals("ok")) {
+                    JSONObject billdatajson = res.getJSONObject("data");
+
+                    //解析日期
+                    SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    Date time = ft.parse(billdatajson.getString("time"));
+                    //解析余额money
+                    float money = Float.parseFloat(billdatajson.getString("money"));
+                    //解析改变余额
+                    float moneychange = Float.parseFloat(billdatajson.getString("moneychange"));
+                    //解析ps
+                    String ps = billdatajson.getString("ps");
+                    //解析star
+                    boolean star = billdatajson.getString("star").equals("true");
+                    //准备账单
+                    resBill = new Bill(time, moneychange, money, ps, star);
 
                 }
+                else{
+                    mServRet.errorLog(res.getString("result"));
+                }
             }
-        }).start();
 
+            closeConnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mServRet.errorLog("无法连接服务器，或密码错误");
+
+        }
+        catch (ParseException e){
+            e.printStackTrace();
+            mServRet.errorLog("ParseException");
+        }
+
+
+
+        return resBill;
     }
+
 
     /**
      * 返回万元计划存储单
      */
-    public void returnSaveBill() throws InterruptedException {
+    public SaveBill[] SaveReturn() {
+        SaveBill[] resSaveBill=new SaveBill[0];
         //-----转换json命令
         JSONObject pt=new JSONObject();
         pt.put("head","request");
@@ -422,65 +487,130 @@ public class NetMsg {
         final String encryptdata=encrypt(passwd,"0000000000000000",outjson);
 
         //--发送（考虑需要多线程）
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Connect();
-                    out.writeUTF(encryptdata);
+        try {
+            Connect();
+            out.writeUTF(encryptdata);
 
-                    String str = in.readLine();
-                    String resstr=decrypt(passwd,"0000000000000000",str);
-                    System.out.println(resstr);
-                    if(resstr==null){
-                        mServRet.errorLog("密码错误");
-                    }
-                    //解析返回
-                    JSONObject res=JSON.parseObject(resstr);
+            String str = in.readLine();
+            String resstr=decrypt(passwd,"0000000000000000",str);
+            System.out.println(resstr);
+            if(resstr==null){
+                mServRet.errorLog("密码错误");
+            }
+            //解析返回
+            JSONObject res=JSON.parseObject(resstr);
 
-                    if(res.getString("func").equals("return")&&res.getString("part").equals("save")){
-                        JSONArray billdatajson=res.getJSONArray("data");
-                        int len=billdatajson.size();
-                        SaveBill[] billdata=new SaveBill[len];
-                        for(int i=0;i<len;i++){
-                            JSONObject cashe= (JSONObject) billdatajson.get(i);
-                            //解析日期
-                            SimpleDateFormat ft=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                            Date time=ft.parse(cashe.getString("time"));
-                            //解析savemoney
-                            float money=Float.parseFloat(cashe.getString("money"));
-                            //解析改变savemoney
-                            float moneychange=Float.parseFloat(cashe.getString("moneychange"));
-                            //解析target
-                            float target=Float.parseFloat(cashe.getString("target"));
-                            //解析改变target
-                            float targetchange=Float.parseFloat(cashe.getString("targetchange"));
-                            //解析ps
-                            String ps=cashe.getString("ps");
-                            //解析star
-                            boolean star=cashe.getString("star").equals("true");
-                            //准备账单
-                            billdata[i] = new SaveBill(time,target,money,targetchange,moneychange,ps,star);
-
-                        }
-                        mServRet.returnSaveBill(billdata);
-                    }
-
-                    closeConnect();
-                } catch (IOException | ParseException e) {
-                    e.printStackTrace();
-                    mServRet.errorLog("无法连接服务器，或密码错误");
+            if(res.getString("func").equals("return")&&res.getString("part").equals("save")){
+                JSONArray billdatajson=res.getJSONArray("data");
+                int len=billdatajson.size();
+                SaveBill[] billdata=new SaveBill[len];
+                for(int i=0;i<len;i++){
+                    JSONObject cashe= (JSONObject) billdatajson.get(i);
+                    //解析日期
+                    SimpleDateFormat ft=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    Date time=ft.parse(cashe.getString("time"));
+                    //解析savemoney
+                    float money=Float.parseFloat(cashe.getString("money"));
+                    //解析改变savemoney
+                    float moneychange=Float.parseFloat(cashe.getString("moneychange"));
+                    //解析target
+                    float target=Float.parseFloat(cashe.getString("target"));
+                    //解析改变target
+                    float targetchange=Float.parseFloat(cashe.getString("targetchange"));
+                    //解析ps
+                    String ps=cashe.getString("ps");
+                    //解析star
+                    boolean star=cashe.getString("star").equals("true");
+                    //准备账单
+                    billdata[i] = new SaveBill(time,target,money,targetchange,moneychange,ps,star);
 
                 }
+                //mServRet.returnSaveBill(billdata);
+                resSaveBill=billdata;
             }
-        });
-        t.start();
-        t.join();
 
+            closeConnect();
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+            mServRet.errorLog("无法连接服务器，或密码错误");
+
+        }
+
+        return resSaveBill;
 
     }
 
+    public SaveBill SaveReturnLast(){
+        SaveBill resBill=null;
+        //-----转换json命令
+        JSONObject pt=new JSONObject();
+        pt.put("head","request");
+        pt.put("part","save");
+        pt.put("func","returnlast");
+        pt.put("user",user);
+        pt.put("time",new Date().toString());
+        String outjson=pt.toJSONString();
 
+        //--加密
+        final String encryptdata=encrypt(passwd,"0000000000000000",outjson);
+
+        //--发送（考虑需要多线程）
+        try {
+            Connect();
+            out.writeUTF(encryptdata);
+
+            String str = in.readLine();
+            String resstr=decrypt(passwd,"0000000000000000",str);
+            System.out.println(resstr);
+            if(resstr==null){
+                mServRet.errorLog("密码错误");
+            }
+            //解析返回
+            JSONObject res=JSON.parseObject(resstr);
+
+            if(res.getString("func").equals("returnlast")&&res.getString("part").equals("save")){
+                if(res.getString("result").equals("ok")) {
+                    JSONObject billdatajson = res.getJSONObject("data");
+
+                    //解析日期
+                    SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    Date time = ft.parse(billdatajson.getString("time"));
+                    //解析储蓄money
+                    float money = Float.parseFloat(billdatajson.getString("money"));
+                    //解析改变储蓄
+                    float moneychange = Float.parseFloat(billdatajson.getString("moneychange"));
+                    //解析目标储蓄
+                    float target= Float.parseFloat(billdatajson.getString("target"));
+                    //解析目标储蓄改变值
+                    float targetchange= Float.parseFloat(billdatajson.getString("targetchange"));
+                    //解析ps
+                    String ps = billdatajson.getString("ps");
+                    //解析star
+                    boolean star = billdatajson.getString("star").equals("true");
+                    //准备账单
+                    resBill = new SaveBill(time,target,money,targetchange,moneychange,ps,star);
+
+                }
+                else{
+                    mServRet.errorLog(res.getString("result"));
+                }
+            }
+
+            closeConnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mServRet.errorLog("无法连接服务器，或密码错误");
+
+        }
+        catch (ParseException e){
+            e.printStackTrace();
+            mServRet.errorLog("ParseException");
+        }
+
+
+
+        return resBill;
+    }
 
 
 

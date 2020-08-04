@@ -59,16 +59,26 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
         }
 
 
-        //提交按键监听
+        //提交按键，开辟线程提交
         mBtnConmmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                float changemoney=Float.parseFloat(mEditChangeMoney.getText().toString());
-                if(mChangRadioF_bool){
-                    changemoney=(-1)*changemoney;
-                }
-                String ps=mEidtPs.getText().toString();
-                mNet.changeMoney(changemoney,ps,false);
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        float changemoney;String ps;
+                        synchronized (this){
+                            changemoney=Float.parseFloat(mEditChangeMoney.getText().toString());
+                            if(mChangRadioF_bool){
+                                changemoney=(-1)*changemoney;
+                            }
+                            ps=mEidtPs.getText().toString();
+                        }
+
+                        mNet.PayChange(changemoney,ps,false);
+                    }
+                }).start();
             }
         });
 
@@ -99,10 +109,7 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
         });
     }
 
-    @Override
-    public void loginhome() {
 
-    }
 
     @Override
     public void errorLog(String errString) {
@@ -111,15 +118,6 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
         Looper.loop();
     }
 
-    @Override
-    public void returnBill(Bill[] data) {
-
-    }
-
-    @Override
-    public void returnSaveBill(SaveBill[] data) {
-
-    }
 
     @Override
     public void home() {
@@ -129,7 +127,6 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
 
 
     //键盘隐藏
-
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent  ev) {

@@ -64,9 +64,23 @@ public class LoginActivity extends AppCompatActivity implements NetMsg.ServerRet
                 mNet=new NetMsg(LoginActivity.this,mEditurl.getText().toString(),2333,
                         mEdituser.getText().toString(),
                         mEditpasswd.getText().toString());
-                mNet.loginServer();
-                //Intent intent =new Intent(LoginActivity.this,MainActivity.class);
-                //startActivity(intent);
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String lgres=mNet.loginServer();
+                        if(lgres.equals("ok")){
+                            Intent intent =new Intent(LoginActivity.this,MainActivity.class);
+                            startActivity(intent);
+                        }
+                        else{
+                            Looper.prepare();
+                            Toast.makeText(LoginActivity.this,lgres,Toast.LENGTH_SHORT).show();
+                            Looper.loop();
+                        }
+                    }
+                }).start();
+
             }
         });
 
@@ -74,27 +88,12 @@ public class LoginActivity extends AppCompatActivity implements NetMsg.ServerRet
 
 
     //ServerReturn接口的回响方法
-    @Override
-    public void loginhome() {
-        Intent intent =new Intent(LoginActivity.this,MainActivity.class);
-        startActivity(intent);
-    }
 
     @Override
     public void errorLog(String errString) {
         Looper.prepare();
         Toast.makeText(LoginActivity.this,errString,Toast.LENGTH_SHORT).show();
         Looper.loop();
-    }
-
-    @Override
-    public void returnBill(Bill[] data) {
-
-    }
-
-    @Override
-    public void returnSaveBill(SaveBill[] data) {
-
     }
 
     @Override

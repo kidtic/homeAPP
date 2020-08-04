@@ -27,8 +27,6 @@ public class MoneyFragment extends Fragment implements NetMsg.ServerReturn {
     private ListView mMenu;
     private NetMsg mNet;
     private SharedPreferences mspf;
-    private Bill[] data;
-    private SaveBill[] savedata;
     private TextView mTv_savemoneyShow;
     private TextView mTv_savetargetShow;
     private String[] menu={"改变余额","账单"};
@@ -67,63 +65,49 @@ public class MoneyFragment extends Fragment implements NetMsg.ServerReturn {
         });
 
 
-        //查余额
-        //mspf=getSharedPreferences("config",MODE_PRIVATE);
-
+        //初始化通讯
         mNet=new NetMsg(MoneyFragment.this,appdata.url,2333,appdata.user,appdata.passwd);
-        //查询账单与储蓄单
-        try {
-            mNet.returnBill();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            mNet.returnSaveBill();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        updataShow();
+        //-----查询余额与储蓄值线程
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (this){
+                    Bill data=mNet.PayReturnLast();
+                    SaveBill savedata=mNet.SaveReturnLast();
+                    mMoneyShow.setText(String.valueOf(data.money));
+                    mTv_savemoneyShow.setText(String.valueOf(savedata.money));
+                    mTv_savetargetShow.setText(String.valueOf(savedata.target));
+                }
+            }
+        }).start();
 
 
         return root;
     }
 
 
-    private void updataShow(){
-        myapp appdata=(myapp)getActivity().getApplication();
-        float mony = appdata.appBillData[appdata.appBillData.length-1].money;
-        mMoneyShow.setText(String.valueOf(mony));
-
-        SaveBill[] data=appdata.appSaveBillData;
-        //显示储蓄额
-        String moneystr;
-        moneystr=String.valueOf(data[data.length-1].money);
-        mTv_savemoneyShow.setText(moneystr);
-        //显示应存量
-        String targetstr;
-        targetstr=String.valueOf(data[data.length-1].target);
-        targetstr="应存:"+targetstr;
-        mTv_savetargetShow.setText(targetstr);
-
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        try {
-            mNet.returnBill();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        updataShow();
+        //-----查询余额与储蓄值线程
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (this){
+                    Bill data=mNet.PayReturnLast();
+                    SaveBill savedata=mNet.SaveReturnLast();
+                    mMoneyShow.setText(String.valueOf(data.money));
+                    mTv_savemoneyShow.setText(String.valueOf(savedata.money));
+                    mTv_savetargetShow.setText(String.valueOf(savedata.target));
+                }
+            }
+        }).start();
+
         super.onActivityResult(requestCode, resultCode, data);
 
     }
 
-    @Override
-    public void loginhome() {
 
-    }
 
     @Override
     public void errorLog(String errString) {
@@ -132,19 +116,7 @@ public class MoneyFragment extends Fragment implements NetMsg.ServerReturn {
         Looper.loop();
     }
 
-    @Override
-    public void returnBill(Bill[] data) {
-        myapp appdata= (myapp) getActivity().getApplication();
-        appdata.appBillData=data;
 
-    }
-
-    @Override
-    public void returnSaveBill(SaveBill[] data) {
-        myapp appdata=(myapp)getActivity().getApplication();
-        appdata.appSaveBillData=data;
-
-    }
 
     @Override
     public void home() {
