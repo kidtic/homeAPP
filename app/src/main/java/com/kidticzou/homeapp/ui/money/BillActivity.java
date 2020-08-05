@@ -14,6 +14,10 @@ import com.kidticzou.homeapp.model.NetMsg;
 import com.kidticzou.homeapp.model.SaveBill;
 import com.kidticzou.homeapp.myapp;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+
 public class BillActivity extends AppCompatActivity implements NetMsg.ServerReturn {
     private ListView mLVbill;
     private myapp appdata;
@@ -34,7 +38,12 @@ public class BillActivity extends AppCompatActivity implements NetMsg.ServerRetu
             public void run() {
                 final Bill[] data;
                 synchronized (mNet) {
-                    data = mNet.PayReturn();
+                    Bill[] mdata = mNet.PayReturn();
+                    data=new Bill[mdata.length];
+                    for(int i=0;i<data.length;i++){
+                        data[i]=mdata[mdata.length-i-1];
+                    }
+
                 }
                 //其他线程中要修改UI数据，则需要用runOnUiThread
                 runOnUiThread(new Runnable() {
