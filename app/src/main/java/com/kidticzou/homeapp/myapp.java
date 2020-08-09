@@ -3,6 +3,7 @@ package com.kidticzou.homeapp;
 import android.app.Application;
 
 import com.kidticzou.homeapp.model.Bill;
+import com.kidticzou.homeapp.model.NetMsg;
 import com.kidticzou.homeapp.model.SaveBill;
 
 public class myapp extends Application {

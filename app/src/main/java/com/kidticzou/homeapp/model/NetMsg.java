@@ -204,7 +204,7 @@ public class NetMsg {
     }
 
     //-------------------------------------------------------------
-    //                      发送请求
+    //                      接口与内部类
     //-------------------------------------------------------------
     /**
      * 回响接口
@@ -216,12 +216,17 @@ public class NetMsg {
         void home();
     }
 
+
+    //----------------------------------------------------------
+    //                      发送请求
+    //---------------------------------------------------------
+
     /**
      * 用于登录确认，对服务器
      * 发送确认消息等待服务器回应
      */
     public String loginServer(){
-        String returnmsg="error";
+        String returnmsg="error:null";
         //-----转换json命令
         JSONObject pt=new JSONObject();
         pt.put("head","request");
@@ -245,19 +250,20 @@ public class NetMsg {
             String resstr=decrypt(passwd,"0000000000000000",str);
             System.out.println(resstr);
             if(resstr==null){
-                returnmsg="密码错误";
+                returnmsg="error:密码错误";
             }
             else{
                 //解析返回
                 JSONObject res=JSON.parseObject(resstr);
                 if(res.getString("func").equals("login")){
-                    if(res.getString("data").equals("ok")){
+                    if(res.getString("result").equals("ok")){
                         System.out.println("loginhome");
-                        returnmsg="ok";
+                        String verstr = res.getJSONObject("data").getString("version");
+                        returnmsg="ok:"+verstr;
                     }
-                    else if(res.getString("data").equals("no user")){
+                    else if(res.getString("result").equals("error:no user")){
                         System.out.println("用户名不存在");
-                        returnmsg="用户名不存在";
+                        returnmsg="error:no user";
                     }
                 }
             }
@@ -265,7 +271,7 @@ public class NetMsg {
             closeConnect();
         } catch (IOException e) {
             e.printStackTrace();
-            returnmsg="无法连接服务器，或密码错误";
+            returnmsg="error:无法连接服务器，或密码错误";
         }
 
         return returnmsg;
