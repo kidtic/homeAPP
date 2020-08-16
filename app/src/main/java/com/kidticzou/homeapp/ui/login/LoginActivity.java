@@ -54,6 +54,7 @@ public class LoginActivity extends AppCompatActivity implements NetMsg.ServerRet
         version=new versionType(vstr);
         //app
         appdata= (myapp) getApplication();
+        appdata.localVersion=new versionType(vstr);
 
         //设置对话框内容
         builder = new AlertDialog.Builder(LoginActivity.this);
@@ -107,6 +108,7 @@ public class LoginActivity extends AppCompatActivity implements NetMsg.ServerRet
                         if(lgressin[0].equals("ok")){
                             //查看版本号是否满足要求
                             versionType remoteVersion=new versionType(lgressin[1]);
+                            appdata.remoteVersion=new versionType(lgressin[1]);
                             boolean TostDig=false;
                             if(remoteVersion.gen>version.gen){
                                 //对话框

@@ -5,15 +5,16 @@ import android.app.Application;
 import com.kidticzou.homeapp.model.Bill;
 import com.kidticzou.homeapp.model.NetMsg;
 import com.kidticzou.homeapp.model.SaveBill;
+import com.kidticzou.homeapp.model.versionType;
 
 public class myapp extends Application {
     public String url;
     public String user;
     public String passwd;
-    public Bill[] appBillData;
-    public SaveBill[] appSaveBillData;
 
     //--------config
+    public versionType remoteVersion;//服务器版本
+    public versionType localVersion;//本地版本
 
     //是否默认是扣除余额的钱
     public boolean mChangMoneyF=true;

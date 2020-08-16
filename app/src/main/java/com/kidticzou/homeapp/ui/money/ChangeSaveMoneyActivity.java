@@ -6,7 +6,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Looper;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -17,37 +16,35 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.kidticzou.homeapp.R;
-import com.kidticzou.homeapp.model.Bill;
 import com.kidticzou.homeapp.model.NetMsg;
-import com.kidticzou.homeapp.model.SaveBill;
 import com.kidticzou.homeapp.myapp;
 
-public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.ServerReturn {
+public class ChangeSaveMoneyActivity extends AppCompatActivity implements NetMsg.ServerReturn{
+
     private EditText mEditChangeMoney;
     private EditText mEidtPs;
-    private Button mBtnDiv;
     private Button mBtnConmmit;
     private RadioGroup mChangRadio;
     private RadioButton mRbtn_f;//扣款
-    private RadioButton mRbtn_p;//还款
+    private RadioButton mRbtn_p;//存款
     private boolean mChangRadioF_bool;//是选的哪一个，实时更新。
     private NetMsg mNet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_change_money);
+        setContentView(R.layout.activity_change_save_money);
+
         mEditChangeMoney=findViewById(R.id.et_changmoney);
         mEidtPs=findViewById(R.id.et_ps);
-        mBtnDiv=findViewById(R.id.btn_div2);
         mBtnConmmit=findViewById(R.id.btn_moneycommit);
         mChangRadio=findViewById(R.id.rg_1);
         mRbtn_f=findViewById(R.id.rb_f);
         mRbtn_p=findViewById(R.id.rb_p);
         myapp appdata= (myapp) getApplication();
-        mNet=new NetMsg(ChangeMoneyActivity.this,appdata.url,2333,appdata.user,appdata.passwd);
+        mNet=new NetMsg(ChangeSaveMoneyActivity.this,appdata.url,2333,appdata.user,appdata.passwd);
         //查看默认扣款还是还款
-        if(appdata.mChangMoneyF){
+        if(!appdata.mChangMoneyF){
             mRbtn_f.setChecked(true);
             mEditChangeMoney.setTextColor(Color.rgb(0,255,0));
             mChangRadioF_bool=true;
@@ -58,6 +55,21 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
             mChangRadioF_bool=false;
         }
 
+        //扣还是加，监听事件
+        mChangRadio.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                if(i==R.id.rb_f){
+                    mEditChangeMoney.setTextColor(Color.rgb(0,255,0));
+                    mChangRadioF_bool=true;
+
+                }
+                else if (i==R.id.rb_p){
+                    mEditChangeMoney.setTextColor(Color.rgb(255,0,0));
+                    mChangRadioF_bool=false;
+                }
+            }
+        });
 
         //提交按键，开辟线程提交
         mBtnConmmit.setOnClickListener(new View.OnClickListener() {
@@ -76,40 +88,14 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
                             ps=mEidtPs.getText().toString();
                         }
 
-                        mNet.PayChange(changemoney,ps,false);
+                        mNet.SaveChangeMoney(changemoney,ps,false);
                     }
                 }).start();
             }
         });
 
-        //除以2
-        mBtnDiv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                float changemoney=Float.parseFloat(mEditChangeMoney.getText().toString());
-                changemoney=changemoney/2;
-                mEditChangeMoney.setText(String.valueOf(changemoney));
 
-            }
-        });
-        //扣还是加，监听事件
-        mChangRadio.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                if(i==R.id.rb_f){
-                    mEditChangeMoney.setTextColor(Color.rgb(0,255,0));
-                    mChangRadioF_bool=true;
-
-                }
-                else if (i==R.id.rb_p){
-                    mEditChangeMoney.setTextColor(Color.rgb(255,0,0));
-                    mChangRadioF_bool=false;
-                }
-            }
-        });
     }
-
-
 
     @Override
     public void errorLog(String errString) {
@@ -118,17 +104,15 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
         Looper.loop();
     }
 
-
     @Override
     public void home() {
         setResult(RESULT_OK);
         finish();
     }
 
-
     //键盘隐藏
     @Override
-    public boolean dispatchTouchEvent(MotionEvent  ev) {
+    public boolean dispatchTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             View view = getCurrentFocus();
             if (isShouldHideInput(view, ev)) {
@@ -154,7 +138,7 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
             int right = left + v.getWidth();
             if (event.getX() > left && event.getX() < right
                     && event.getY() > top && event.getY() < bottom) {
-            // 点击的是输入框区域，保留点击EditText的事件
+                // 点击的是输入框区域，保留点击EditText的事件
                 return false;
             } else {
                 return true;
@@ -162,5 +146,4 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
         }
         return false;
     }
-
 }

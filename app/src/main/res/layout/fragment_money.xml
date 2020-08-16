@@ -52,6 +52,7 @@
 
         />
     <androidx.cardview.widget.CardView
+        android:id="@+id/moneycard"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_marginTop="50dp"
@@ -59,6 +60,7 @@
         android:layout_marginRight="20dp"
         android:layout_marginLeft="20dp"
         app:cardCornerRadius="10dp"
+        android:foreground="?attr/selectableItemBackground"
         >
         <TextView
             android:layout_width="100dp"

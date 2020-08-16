@@ -618,6 +618,59 @@ public class NetMsg {
         return resBill;
     }
 
+    public boolean SaveChangeMoney(float changmoney,String ps,boolean star){
+        boolean resbool=false;
+        //-----转换json命令
+        JSONObject pt=new JSONObject();
+        pt.put("head","request");
+        pt.put("part","save");
+        pt.put("func","changemoney");
+        pt.put("user",user);
+        pt.put("time",new Date().toString());
+        JSONObject datajson=new JSONObject();
+        datajson.put("changeMoney",changmoney);
+        datajson.put("ps",ps);
+        datajson.put("star",star);
+        pt.put("data",datajson);
+        String outjson=pt.toJSONString();
+
+        //--加密
+        final String encryptdata=encrypt(passwd,"0000000000000000",outjson);
+
+        //--发送（考虑需要多线程）
+        try {
+            Connect();
+            out.writeUTF(encryptdata);
+
+            String str = in.readLine();
+            String resstr=decrypt(passwd,"0000000000000000",str);
+            System.out.println(resstr);
+            if(resstr==null){
+                mServRet.errorLog("密码错误");
+            }
+            //解析返回
+            JSONObject res=JSON.parseObject(resstr);
+            if(res.getString("func").equals("changemoney")&&res.getString("part").equals("save")){
+                if(res.getString("result").equals("ok")){
+                    mServRet.home();
+                    resbool=true;
+                }
+                else {
+                    mServRet.errorLog(res.getString("result"));
+                }
+
+            }
+
+            closeConnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mServRet.errorLog("无法连接服务器，或密码错误");
+
+        }
+
+        return resbool;
+    }
+
 
 
 }

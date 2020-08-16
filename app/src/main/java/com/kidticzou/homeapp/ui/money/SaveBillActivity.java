@@ -1,8 +1,8 @@
+
 package com.kidticzou.homeapp.ui.money;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
 import android.widget.ListView;
@@ -14,11 +14,7 @@ import com.kidticzou.homeapp.model.NetMsg;
 import com.kidticzou.homeapp.model.SaveBill;
 import com.kidticzou.homeapp.myapp;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-
-public class BillActivity extends AppCompatActivity implements NetMsg.ServerReturn {
+public class SaveBillActivity extends AppCompatActivity implements NetMsg.ServerReturn{
     private ListView mLVbill;
     private myapp appdata;
     private NetMsg mNet;
@@ -26,31 +22,30 @@ public class BillActivity extends AppCompatActivity implements NetMsg.ServerRetu
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bill);
+        setContentView(R.layout.activity_save_bill);
 
         mLVbill=findViewById(R.id.lv_bill);
         appdata= (myapp) getApplication();
-        mNet=new NetMsg(BillActivity.this,appdata.url,2333,appdata.user,appdata.passwd);
+        mNet=new NetMsg(SaveBillActivity.this,appdata.url,2333,appdata.user,appdata.passwd);
 
-        //查余额线程
+        //查线程
         new Thread(new Runnable() {
             @Override
             public void run() {
                 final Bill[] data;
                 synchronized (mNet) {
-                    Bill[] mdata = mNet.PayReturn();
+                    SaveBill[] mdata = mNet.SaveReturn();
                     data=new Bill[mdata.length];
                     for(int i=0;i<data.length;i++){
-                        data[i]=mdata[mdata.length-i-1];
+                        data[i]=mdata[mdata.length-i-1].to_Bill();
                     }
 
                 }
                 //其他线程中要修改UI数据，则需要用runOnUiThread
-
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mLVbill.setAdapter(new BillAdapter(BillActivity.this,data));
+                        mLVbill.setAdapter(new BillAdapter(SaveBillActivity.this,data));
                     }
                 });
 
@@ -60,9 +55,7 @@ public class BillActivity extends AppCompatActivity implements NetMsg.ServerRetu
         }).start();
 
 
-
     }
-
 
     @Override
     public void errorLog(String errString) {
@@ -70,8 +63,6 @@ public class BillActivity extends AppCompatActivity implements NetMsg.ServerRetu
         Toast.makeText(this,errString,Toast.LENGTH_SHORT).show();
         Looper.loop();
     }
-
-
 
     @Override
     public void home() {

@@ -20,4 +20,8 @@ public class SaveBill {
         this.ps=ps;
         this.star=star;
     }
+    public Bill to_Bill(){
+        Bill res=new Bill(time,moneychange,money,ps,star);
+        return res;
+    }
 }
