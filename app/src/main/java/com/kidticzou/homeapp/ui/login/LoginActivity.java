@@ -25,6 +25,7 @@ import com.kidticzou.homeapp.model.NetMsg;
 import com.kidticzou.homeapp.model.SaveBill;
 import com.kidticzou.homeapp.model.versionType;
 import com.kidticzou.homeapp.myapp;
+import com.kidticzou.homeapp.ui.money.ChangeSaveMoneyActivity;
 import com.kidticzou.homeapp.ui.money.MoneyFragment;
 
 public class LoginActivity extends AppCompatActivity implements NetMsg.ServerReturn {
@@ -126,6 +127,7 @@ public class LoginActivity extends AppCompatActivity implements NetMsg.ServerRet
                                 Looper.loop();
                             }
                             else{
+                                //跳转
                                 Intent intent =new Intent(LoginActivity.this,MainActivity.class);
                                 startActivity(intent);
                             }
@@ -150,10 +152,13 @@ public class LoginActivity extends AppCompatActivity implements NetMsg.ServerRet
     //ServerReturn接口的回响方法
 
     @Override
-    public void errorLog(String errString) {
-        Looper.prepare();
-        Toast.makeText(LoginActivity.this,errString,Toast.LENGTH_SHORT).show();
-        Looper.loop();
+    public void errorLog(final String errString) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(LoginActivity.this,errString,Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override

@@ -98,10 +98,13 @@ public class ChangeSaveMoneyActivity extends AppCompatActivity implements NetMsg
     }
 
     @Override
-    public void errorLog(String errString) {
-        Looper.prepare();
-        Toast.makeText(this,errString,Toast.LENGTH_SHORT).show();
-        Looper.loop();
+    public void errorLog(final String errString) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(ChangeSaveMoneyActivity.this,errString,Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override

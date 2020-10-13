@@ -58,10 +58,13 @@ public class SaveBillActivity extends AppCompatActivity implements NetMsg.Server
     }
 
     @Override
-    public void errorLog(String errString) {
-        Looper.prepare();
-        Toast.makeText(this,errString,Toast.LENGTH_SHORT).show();
-        Looper.loop();
+    public void errorLog(final String errString) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(SaveBillActivity.this,errString,Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override

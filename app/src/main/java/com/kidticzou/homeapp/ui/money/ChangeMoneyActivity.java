@@ -16,6 +16,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.kidticzou.homeapp.MainActivity;
 import com.kidticzou.homeapp.R;
 import com.kidticzou.homeapp.model.Bill;
 import com.kidticzou.homeapp.model.NetMsg;
@@ -112,10 +113,13 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
 
 
     @Override
-    public void errorLog(String errString) {
-        Looper.prepare();
-        Toast.makeText(this,errString,Toast.LENGTH_SHORT).show();
-        Looper.loop();
+    public void errorLog(final String errString) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(ChangeMoneyActivity.this,errString,Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 

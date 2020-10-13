@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.kidticzou.homeapp.MainActivity;
 import com.kidticzou.homeapp.R;
 import com.kidticzou.homeapp.model.Bill;
 import com.kidticzou.homeapp.model.NetMsg;
@@ -65,10 +66,14 @@ public class BillActivity extends AppCompatActivity implements NetMsg.ServerRetu
 
 
     @Override
-    public void errorLog(String errString) {
-        Looper.prepare();
-        Toast.makeText(this,errString,Toast.LENGTH_SHORT).show();
-        Looper.loop();
+    public void errorLog(final String errString) {
+        //弹窗
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(BillActivity.this,errString,Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 

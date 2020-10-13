@@ -1,5 +1,6 @@
 package com.kidticzou.homeapp.model;
 import android.content.Context;
+import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -672,5 +673,62 @@ public class NetMsg {
     }
 
 
+    /**
+     * 基础返回（定时请求任务）
+     * @return json类|'ressult'表示返回状态；'tasks'表示任务列表
+     *
+     */
+    public JSONObject BasicReturn(){
+        JSONObject res=new JSONObject();
+        //-----转换json命令
+        JSONObject pt=new JSONObject();
+        pt.put("head","request");
+        pt.put("part","basic");
+        pt.put("func","return");
+        pt.put("user",user);
+        String outjson=pt.toJSONString();
 
+        //--加密
+        final String encryptdata=encrypt(passwd,"0000000000000000",outjson);
+
+        //--发送（考虑需要多线程）
+        try {
+            Connect();
+            //发送
+            out.write(encryptdata.getBytes());
+            //接受
+            String str = in.readLine();
+            closeConnect();//关闭连接
+            //解密
+            String resstr=decrypt(passwd,"0000000000000000",str);
+            System.out.println(resstr);
+            //如果解析为空
+            if(resstr==null){
+                res.put("result","error resstr is empty");
+                return res;
+            }
+
+            //解析返回
+            JSONObject jsondata=JSON.parseObject(resstr);
+
+            if(jsondata.getString("func").equals("return")&&jsondata.getString("part").equals("basic")){
+                if(jsondata.getString("result").equals("ok")){
+                    JSONArray jsontasks=jsondata.getJSONArray("data");
+                    res.put("tasks",jsontasks);
+                    res.put("result","ok");
+                }else{
+                    res.put("result",jsondata.getString("result"));
+                }
+
+            }
+
+
+        } catch (Exception e) {
+            res.put("result","error can't connect server");
+        }
+
+        return res;
+
+
+    }
 }

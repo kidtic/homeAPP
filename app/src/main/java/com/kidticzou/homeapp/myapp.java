@@ -1,6 +1,10 @@
 package com.kidticzou.homeapp;
 
 import android.app.Application;
+import android.content.Context;
+import android.os.Looper;
+import android.view.Gravity;
+import android.widget.Toast;
 
 import com.kidticzou.homeapp.model.Bill;
 import com.kidticzou.homeapp.model.NetMsg;
@@ -22,5 +26,7 @@ public class myapp extends Application {
     public String[] mConfigItem ={"最新版本下载","关于"};
     //更新url
     public String mConfigUpdate="http://kidticzou.com:5000/sharing/fnfPcP4rp";
+
+
 
 }

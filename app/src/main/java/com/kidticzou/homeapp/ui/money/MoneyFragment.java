@@ -161,10 +161,13 @@ public class MoneyFragment extends Fragment implements NetMsg.ServerReturn {
 
 
     @Override
-    public void errorLog(String errString) {
-        Looper.prepare();
-        Toast.makeText(getContext(),errString,Toast.LENGTH_SHORT).show();
-        Looper.loop();
+    public void errorLog(final String errString) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getContext(),errString,Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 
