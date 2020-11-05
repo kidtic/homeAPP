@@ -701,7 +701,7 @@ public class NetMsg {
             closeConnect();//关闭连接
             //解密
             String resstr=decrypt(passwd,"0000000000000000",str);
-            System.out.println(resstr);
+            //System.out.println(resstr);
             //如果解析为空
             if(resstr==null){
                 res.put("result","error resstr is empty");

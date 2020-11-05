@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -18,11 +21,14 @@ import com.kidticzou.homeapp.myapp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.regex.Pattern;
 
 public class BillActivity extends AppCompatActivity implements NetMsg.ServerReturn {
     private ListView mLVbill;
     private myapp appdata;
     private NetMsg mNet;
+    private EditText mSearchText;
+    private Bill[] data;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,14 +36,17 @@ public class BillActivity extends AppCompatActivity implements NetMsg.ServerRetu
         setContentView(R.layout.activity_bill);
 
         mLVbill=findViewById(R.id.lv_bill);
+        mSearchText=findViewById(R.id.bill_search_et);
         appdata= (myapp) getApplication();
         mNet=new NetMsg(BillActivity.this,appdata.url,2333,appdata.user,appdata.passwd);
+        //设置搜索功能
+        mSearchText.addTextChangedListener(textWatcher);
 
         //查余额线程
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final Bill[] data;
+
                 synchronized (mNet) {
                     Bill[] mdata = mNet.PayReturn();
                     data=new Bill[mdata.length];
@@ -47,16 +56,12 @@ public class BillActivity extends AppCompatActivity implements NetMsg.ServerRetu
 
                 }
                 //其他线程中要修改UI数据，则需要用runOnUiThread
-
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         mLVbill.setAdapter(new BillAdapter(BillActivity.this,data));
                     }
                 });
-
-
-
             }
         }).start();
 
@@ -82,4 +87,46 @@ public class BillActivity extends AppCompatActivity implements NetMsg.ServerRetu
     public void home() {
 
     }
+
+    //搜索功能使用
+    private TextWatcher textWatcher=new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            //System.out.println("-1-beforeTextChanged-->" + mSearchText.getText().toString() + "<--");
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            //System.out.println("-1-onTextChanged-->" + mSearchText.getText().toString() + "<--");
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            //System.out.println("-1-afterTextChanged-->" + mSearchText.getText().toString() + "<--");
+            //匹配
+            String[] keyword=mSearchText.getText().toString().split(" ");
+
+            //匹配
+            ArrayList<Bill> billArrayData=new ArrayList<Bill>();
+            for(int i=0;i<data.length;i++){
+                int MatchNum=0;
+                for (String s : keyword) {
+                    if (data[i].ps.contains(s)) {
+                        MatchNum++;
+                    }
+                }
+                float rdi=(float) MatchNum/(float) keyword.length;
+                if(rdi>0.8){
+                    billArrayData.add(data[i]);
+                }
+
+            }
+            //转换
+            Bill[] mdata= new Bill[billArrayData.size()];
+            for(int i=0;i<billArrayData.size();i++){
+                mdata[i]=billArrayData.get(i);
+            }
+            mLVbill.setAdapter(new BillAdapter(BillActivity.this,mdata));
+        }
+    };
 }

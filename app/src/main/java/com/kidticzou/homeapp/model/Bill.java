@@ -2,7 +2,7 @@ package com.kidticzou.homeapp.model;
 
 import java.util.Date;
 
-public class Bill {
+public class Bill extends Object{
     public Date time;
     public float moneychange;
     public float money;
