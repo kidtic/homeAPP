@@ -6,7 +6,8 @@
     <EditText
         android:id="@+id/bill_search_et"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:hint="搜索"/>
     <ListView
         android:id="@+id/lv_bill"
         android:layout_width="match_parent"
