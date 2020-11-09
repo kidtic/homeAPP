@@ -267,8 +267,7 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
                                                 Toast.makeText(ChangeMoneyActivity.this,e.toString(),Toast.LENGTH_LONG).show();
                                             }
                                         }).launch();
-                                //String base64img=Base64Utils.GetImageStr(imgPath);
-                                //System.out.println(base64img);
+
                             }
                         }
                     }
@@ -276,9 +275,7 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
                     //显示压缩后图片
                     mIvPhotoShow.setImageURI(mCameraUri);
 
-                    //尝试base64
-                    String imgbase64=Base64Utils.GetImageStr(mCameraImagePath);
-                    System.out.println(imgbase64);
+
                 } else {
                     // 使用图片路径加载
                     mIvPhotoShow.setImageBitmap(BitmapFactory.decodeFile(mCameraImagePath));

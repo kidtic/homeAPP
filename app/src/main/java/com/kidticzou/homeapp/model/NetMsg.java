@@ -731,4 +731,26 @@ public class NetMsg {
 
 
     }
+
+    /**
+     * 上传文件到指定文件夹
+     * @param FilePath 指定的要被上传的本地文件路径
+     * @param TargetDir 服务器目标文件夹，将文件存在这个位置
+     * @return 成功与否
+     */
+    public boolean uploadFile(String FilePath,String TargetDir){
+
+        return true;
+    }
+
+    /**
+     * 下载文件到指定文件夹
+     * @param remoteFilePath 远程的文件的路径地址
+     * @param SaveDir 本地保存地址
+     */
+    public boolean downloadFile(String remoteFilePath,String SaveDir){
+
+        return true;
+    }
+
 }
