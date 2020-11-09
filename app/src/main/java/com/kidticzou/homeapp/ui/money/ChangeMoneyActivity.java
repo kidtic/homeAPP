@@ -12,6 +12,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
@@ -20,6 +21,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -31,11 +33,15 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.kidticzou.homeapp.MainActivity;
 import com.kidticzou.homeapp.R;
+import com.kidticzou.homeapp.model.Base64Utils;
 import com.kidticzou.homeapp.model.Bill;
 import com.kidticzou.homeapp.model.NetMsg;
 import com.kidticzou.homeapp.model.SaveBill;
+import com.kidticzou.homeapp.model.Uri2PathUtil;
 import com.kidticzou.homeapp.myapp;
 
 import java.io.File;
@@ -43,6 +49,12 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import id.zelory.compressor.Compressor;
+import id.zelory.compressor.constraint.Compression;
+import top.zibin.luban.CompressionPredicate;
+import top.zibin.luban.Luban;
+import top.zibin.luban.OnCompressListener;
 
 public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.ServerReturn {
     private EditText mEditChangeMoney;
@@ -177,6 +189,10 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
      * 用于保存图片的文件路径，Android 10以下使用图片路径访问图片
      */
     private String mCameraImagePath;
+    /**
+     * 用于打开压缩后的图片文件
+     */
+    private File mCameraImgFile;
 
     /**
      *  是否是Android 10以上手机
@@ -205,7 +221,64 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
             if (resultCode == RESULT_OK) {
                 if (isAndroidQ) {
                     // Android 10 使用图片uri加载
+                    mCameraImagePath= Uri2PathUtil.getRealPathFromUri(this, mCameraUri);
+                    final File imgfile=new File(mCameraImagePath);
+
+                    //申请读取权限并压缩
+                    if (Build.VERSION.SDK_INT >= 23) {
+                        int REQUEST_CODE_CONTACT = 101;
+                        String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                        //验证是否许可权限
+                        for (String str : permissions) {
+                            if (this.checkSelfPermission(str) != PackageManager.PERMISSION_GRANTED) {
+                                //申请权限
+                                this.requestPermissions(permissions, REQUEST_CODE_CONTACT);
+                                return;
+                            } else {
+                                //这里就是权限打开之后自己要操作的逻辑
+                                //压缩图片
+                                Luban.with(this).load(mCameraImagePath).ignoreBy(100)
+                                        .setTargetDir(imgfile.getParent())
+                                        .filter(new CompressionPredicate() {
+                                            @Override
+                                            public boolean apply(String path) {
+                                                return !(TextUtils.isEmpty(path) || path.toLowerCase().endsWith(".gif"));
+                                            }
+                                        })
+                                        .setCompressListener(new OnCompressListener() {
+                                            @Override
+                                            public void onStart() {
+
+                                            }
+
+                                            @Override
+                                            public void onSuccess(File file) {
+                                                Toast.makeText(ChangeMoneyActivity.this,"压缩后大小:"+String.valueOf(file.length()/1024)+"k",Toast.LENGTH_LONG).show();
+                                                //删除原图
+                                                imgfile.delete();
+                                                mCameraImagePath=null;
+                                                mCameraImgFile=file;
+                                                mCameraUri=Uri.fromFile(file);
+                                                mCameraImagePath=file.getPath();
+                                            }
+
+                                            @Override
+                                            public void onError(Throwable e) {
+                                                Toast.makeText(ChangeMoneyActivity.this,e.toString(),Toast.LENGTH_LONG).show();
+                                            }
+                                        }).launch();
+                                //String base64img=Base64Utils.GetImageStr(imgPath);
+                                //System.out.println(base64img);
+                            }
+                        }
+                    }
+
+                    //显示压缩后图片
                     mIvPhotoShow.setImageURI(mCameraUri);
+
+                    //尝试base64
+                    String imgbase64=Base64Utils.GetImageStr(mCameraImagePath);
+                    System.out.println(imgbase64);
                 } else {
                     // 使用图片路径加载
                     mIvPhotoShow.setImageBitmap(BitmapFactory.decodeFile(mCameraImagePath));
@@ -309,6 +382,8 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
         }
         return tempFile;
     }
+
+
 
 
     //键盘隐藏

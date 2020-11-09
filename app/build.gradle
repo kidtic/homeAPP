@@ -46,4 +46,9 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'com.android.support:support-v4'
 
+    implementation 'id.zelory:compressor:3.0.0'
+    implementation 'top.zibin:Luban:1.1.8'
+
+
+
 }
