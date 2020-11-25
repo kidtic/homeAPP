@@ -86,7 +86,11 @@ public class MainActivity extends AppCompatActivity implements NetMsg.ServerRetu
                 }
 
                 //得到任务列表
-                JSONObject taskList=mNet.BasicReturn();
+                JSONObject taskList;
+                synchronized (this){
+                    taskList=mNet.BasicReturn();
+                }
+
                 //查看连接是否正常,处理不正常的返回
                 if(taskList.getString("result")=="error can't connect server"){
                     //无法连接服务器直接退出

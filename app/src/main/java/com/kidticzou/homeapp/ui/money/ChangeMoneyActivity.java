@@ -108,15 +108,18 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
                     @Override
                     public void run() {
                         float changemoney;String ps;
-                        synchronized (this){
-                            changemoney=Float.parseFloat(mEditChangeMoney.getText().toString());
-                            if(mChangRadioF_bool){
-                                changemoney=(-1)*changemoney;
+                        synchronized (this) {
+                            changemoney = Float.parseFloat(mEditChangeMoney.getText().toString());
+                            if (mChangRadioF_bool) {
+                                changemoney = (-1) * changemoney;
                             }
-                            ps=mEidtPs.getText().toString();
+                            ps = mEidtPs.getText().toString();
+
+
+                            mNet.uploadFile(mCameraImgFile, "img/homeAPP/bill/");
+                            mNet.PayChange(changemoney, ps + " $[img](img/homeAPP/bill/" + mCameraImgFile.getName() + ")", false);
                         }
 
-                        mNet.PayChange(changemoney,ps,false);
                     }
                 }).start();
             }
@@ -260,6 +263,7 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
                                                 mCameraImgFile=file;
                                                 mCameraUri=Uri.fromFile(file);
                                                 mCameraImagePath=file.getPath();
+
                                             }
 
                                             @Override

@@ -14,10 +14,15 @@ import com.kidticzou.homeapp.ui.money.MoneyFragment;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.net.Socket;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.text.ParseException;
@@ -734,11 +739,74 @@ public class NetMsg {
 
     /**
      * 上传文件到指定文件夹
-     * @param FilePath 指定的要被上传的本地文件路径
+     * @param file 指定的要被上传的文件
      * @param TargetDir 服务器目标文件夹，将文件存在这个位置
      * @return 成功与否
      */
-    public boolean uploadFile(String FilePath,String TargetDir){
+    public boolean uploadFile(File file, String TargetDir){
+        //-----准备数据
+        byte[] data = null;
+        try {
+            InputStream filein = new FileInputStream(file.getPath());
+            data = new byte[filein.available()];
+            filein.read(data);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int packageSize = 4096;
+        int fullPackageNum=data.length/packageSize;
+        int lastPackageSize=data.length%packageSize;
+
+        //-----转换json命令
+        JSONObject pt=new JSONObject();
+        pt.put("head","request");
+        pt.put("part","post");
+        pt.put("func","upload");
+        pt.put("user",user);
+        JSONObject ptdata=new JSONObject();
+        ptdata.put("TargetDir",TargetDir);
+        ptdata.put("filename",file.getName());
+        ptdata.put("size",data.length);
+        ptdata.put("packageSize",packageSize);
+        pt.put("data",ptdata);
+        String outjson=pt.toJSONString();
+        System.out.println(outjson);
+
+        //--加密
+        final String encryptdata=encrypt(passwd,"0000000000000000",outjson);
+
+        //--发送（考虑需要多线程）
+        try {
+            Connect();
+            //发送
+            out.write(encryptdata.getBytes());
+            //接受
+            String str = in.readLine();
+            //解密
+            String resstr=decrypt(passwd,"0000000000000000",str);
+            //如果解析为空
+            if(resstr==null){
+                return false;
+            }
+            //解析返回
+            JSONObject jsondata=JSON.parseObject(resstr);
+            if(jsondata.getString("result").equals("ok")){
+                //开始上传文件
+                System.out.println("upload!!!!!!!!!!!!!!!!!");
+                out.write(data);
+
+            }
+            else{
+                System.out.println(" upload error");
+            }
+            closeConnect();
+
+        } catch (Exception e) {
+            mServRet.errorLog("无法连接服务器");
+        }
+
 
         return true;
     }
