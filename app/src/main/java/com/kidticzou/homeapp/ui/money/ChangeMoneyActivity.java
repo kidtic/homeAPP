@@ -115,9 +115,14 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
                             }
                             ps = mEidtPs.getText().toString();
 
+                            if(mCameraImgFile==null) {
+                                mNet.PayChange(changemoney, ps , false);
+                            }
+                            else{
+                                mNet.uploadFile(mCameraImgFile, "img/homeAPP/bill/");
+                                mNet.PayChange(changemoney, ps + " $[img](img/homeAPP/bill/" + mCameraImgFile.getName() + ")", false);
+                            }
 
-                            mNet.uploadFile(mCameraImgFile, "img/homeAPP/bill/");
-                            mNet.PayChange(changemoney, ps + " $[img](img/homeAPP/bill/" + mCameraImgFile.getName() + ")", false);
                         }
 
                     }
@@ -195,7 +200,7 @@ public class ChangeMoneyActivity extends AppCompatActivity implements NetMsg.Ser
     /**
      * 用于打开压缩后的图片文件
      */
-    private File mCameraImgFile;
+    private File mCameraImgFile=null;
 
     /**
      *  是否是Android 10以上手机
